@@ -1,0 +1,5 @@
+{
+  "dataSource": "./dist/src/data-source.js",
+  "output": "./erd-output"
+}
+

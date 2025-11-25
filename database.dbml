@@ -1,0 +1,43 @@
+// Database Schema Generated from TypeORM Entities
+// Generated at: 2025-11-24T09:06:29.298Z
+// Project: typeorm-erd
+
+Table users_example {
+  id integer [pk, increment]
+  email varchar [not null]
+  name varchar [not null]
+  age integer
+  isActive boolean [not null, default: true]
+  createdAt timestamp [not null]
+  updatedAt timestamp [not null]
+}
+
+Table posts_example {
+  id integer [pk, increment]
+  title varchar [not null]
+  content text [not null]
+  isPublished boolean [not null, default: false]
+  viewCount integer [not null, default: 0]
+  createdAt timestamp [not null]
+  updatedAt timestamp [not null]
+  authorId integer
+}
+
+Table categories_example {
+  id integer [pk, increment]
+  name varchar [not null]
+  description varchar
+  postCount integer [not null, default: 0]
+  createdAt timestamp [not null]
+  updatedAt timestamp [not null]
+}
+
+Table post_categories_example {
+  post_id integer [pk]
+  category_id integer [pk]
+}
+
+// Relationships
+Ref: posts_example.authorId > users_example.id
+Ref: post_categories_example.post_id > posts_example.id
+Ref: post_categories_example.category_id > categories_example.id

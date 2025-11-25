@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  postgres-erd:
+    container_name: postgres-erd
+    image: postgres:16.3-alpine
+    restart: always
+    ports:
+      - '54322:5432'
+    environment:
+      - POSTGRES_USER=erd-test
+      - POSTGRES_PASSWORD=erd-test
+    volumes:
+      - pgdata_scholar_lghnh:/var/lib/postgresql/data
+
+volumes:
+  pgdata_scholar_lghnh:
