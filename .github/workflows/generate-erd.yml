@@ -63,11 +63,11 @@ jobs:
           path: erd-output/
           retention-days: 30
 
-  # GitHub Pages 배포 (main 브랜치만)
+  # GitHub Pages 배포 (모든 브랜치)
   deploy-erd:
     needs: generate-erd
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
 
     permissions:
       pages: write
