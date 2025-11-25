@@ -15,6 +15,29 @@ jobs:
   generate-erd:
     runs-on: ubuntu-latest
 
+    # PostgreSQL 서비스 추가
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: erd-test
+          POSTGRES_PASSWORD: erd-test
+          POSTGRES_DB: erd-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: erd-test
+      DB_PASSWORD: erd-test
+      DB_DATABASE: erd-test
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,7 +72,6 @@ jobs:
   deploy-erd:
     needs: generate-erd
     runs-on: ubuntu-latest
-    # main 브랜치 push 시에만 배포
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:

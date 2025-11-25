@@ -26,7 +26,7 @@ export class Post {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: false })
   isPublished: boolean;
 
   @Column({ type: 'integer', default: 0 })
