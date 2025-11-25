@@ -26,7 +26,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Build TypeScript
         run: yarn build
@@ -34,39 +34,23 @@ jobs:
       - name: Generate ERD
         run: npx erdia build -d dist/src/data-source.js -o erd-output
 
+      - name: List ERD output
+        run: ls -la erd-output/
+
       - name: Upload ERD artifacts
         uses: actions/upload-artifact@v4
         with:
           name: erd-output
           path: erd-output/
           retention-days: 30
+          if-no-files-found: error
 
-      # PR에 ERD 이미지 코멘트로 첨부 (선택)
-      - name: Comment ERD on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-
-            // SVG 파일 찾기
-            const files = fs.readdirSync('erd-output');
-            const svgFile = files.find(f => f.endsWith('.svg'));
-
-            if (svgFile) {
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `## 📊 ERD Updated\n\nERD has been generated. Download from [Artifacts](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}).`
-              });
-            }
-
-  # GitHub Pages에 ERD 배포 (선택)
+  # GitHub Pages에 ERD 배포 (main 브랜치만)
   deploy-erd:
     needs: generate-erd
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # main 브랜치 push 시에만 배포
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     permissions:
       pages: write

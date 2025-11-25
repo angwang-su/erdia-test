@@ -23,4 +23,3 @@ export class Like {
   @ManyToOne(() => Post, (post) => post.likes)
   post: Post;
 }
-
