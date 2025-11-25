@@ -28,14 +28,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install erdia
-        run: yarn add -D erdia
-
       - name: Build TypeScript
         run: yarn build
 
       - name: Generate ERD
-        run: erdia build -d dist/src/data-source.js -o erd-output
+        run: npx erdia build -d dist/src/data-source.js -o erd-output
 
       - name: Upload ERD artifacts
         uses: actions/upload-artifact@v4
