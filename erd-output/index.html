@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>typeorm-erd entity specification</title>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      .bd-aside a {
+        padding: 0.1875rem 0.5rem;
+        margin-top: 0.125rem;
+        margin-left: 0.3125rem;
+        color: var(--bs-body-color);
+      }
+
+      .bd-aside a:hover,
+      .bd-aside a:focus {
+        color: var(--bs-body-color);
+        background-color: rgba(121, 82, 179, 0.1);
+      }
+
+      .bd-aside .active {
+        font-weight: 600;
+        color: var(--bs-body-color);
+      }
+
+      .bd-aside .btn {
+        padding: 0.25rem 0.5rem;
+        font-weight: 600;
+        color: var(--bs-body-color);
+      }
+
+      .bd-aside .btn:hover,
+      .bd-aside .btn:focus {
+        color: var(--bs-body-color);
+        background-color: rgba(121, 82, 179, 0.1);
+      }
+
+      .bd-aside .btn:focus {
+        box-shadow: 0 0 0 1px rgba(121, 82, 179, 0.7);
+      }
+
+      .bd-aside .btn::before {
+        width: 1.25em;
+        line-height: 0;
+        content: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 14l6-6-6-6'/%3e%3c/svg%3e");
+        transition: transform 0.35s ease;
+
+        /* rtl:raw:
+    transform: rotate(180deg) translateX(-2px);
+    */
+        transform-origin: 0.5em 50%;
+      }
+
+      .bd-aside .btn[aria-expanded="true"]::before {
+        transform: rotate(90deg) /* rtl:ignore */;
+      }
+
+      /* Layout */
+      @media (min-width: 1200px) {
+        html {
+          scroll-padding-top: 4rem;
+        }
+
+        body {
+          display: grid;
+          grid-template-rows: auto;
+          grid-template-columns: 4fr 1fr;
+          gap: 1rem;
+        }
+
+        .bd-header {
+          position: fixed;
+          top: 0;
+          /* rtl:begin:ignore */
+          right: 0;
+          left: 0;
+          /* rtl:end:ignore */
+          z-index: 1030;
+          grid-column: 1 / span 3;
+        }
+
+        .bd-aside,
+        .bd-cheatsheet {
+          padding-top: 4rem;
+        }
+
+        /**
+      * 1. Too bad only Firefox supports subgrids ATM
+      */
+        .bd-cheatsheet,
+        .bd-cheatsheet section,
+        .bd-cheatsheet article {
+          display: inherit; /* 1 */
+          grid-template-rows: auto;
+          grid-template-columns: 4fr;
+          grid-column: 1 / span 2;
+          gap: inherit; /* 1 */
+        }
+
+        .bd-aside {
+          grid-area: 1 / 3;
+          scroll-margin-top: 4rem;
+        }
+
+        .bd-cheatsheet section,
+        .bd-cheatsheet section > h2 {
+          top: 2rem;
+          scroll-margin-top: 2rem;
+        }
+
+        .bd-cheatsheet section > h2::before {
+          position: absolute;
+          /* rtl:begin:ignore */
+          top: 0;
+          right: 0;
+          bottom: -2rem;
+          left: 0;
+          /* rtl:end:ignore */
+          z-index: -1;
+          content: "";
+        }
+
+        .bd-cheatsheet article,
+        .bd-cheatsheet .bd-heading {
+          top: 8rem;
+          scroll-margin-top: 8rem;
+        }
+
+        .bd-cheatsheet .bd-heading {
+          z-index: 1;
+        }
+      }
+
+      .hide {
+        display: none !important;
+      }
+
+      .mermaid-box {
+        height: 60vh;
+        min-height: 600px;
+        width: 85vw;
+      }
+
+      .mermaid {
+        height: 60vh;
+        min-height: 600px;
+        width: 85vw;
+        overflow: hidden;
+
+        svg {
+          height: 100% !important;
+          width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-body-tertiary">
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">typeorm-erd</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarCollapse"
+          aria-controls="navbarCollapse"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="/">Entity</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="mermaid.html">ER Diagram</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <aside
+      class="bd-aside sticky-xl-top text-body-secondary align-self-start mb-3 mb-xl-5 px-2"
+    >
+      <section class="entity-version-toc-section toc-typeorm-erd-0-0-1">
+        <h2 class="h6 pt-4 pb-3 mb-4 border-bottom">0.0.1</h2>
+        <nav id="toc-0-0-1" class="small">
+          <ul class="list-unstyled">
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-categories-Category"
+                aria-label="Link to this section: categories(Category)"
+              >
+                categories
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-comments-Comment"
+                aria-label="Link to this section: comments(Comment)"
+              >
+                comments
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-likes-Like"
+                aria-label="Link to this section: likes(Like)"
+              >
+                likes
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-tags-Tag"
+                aria-label="Link to this section: tags(Tag)"
+              >
+                tags
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-posts-Post"
+                aria-label="Link to this section: posts(Post)"
+              >
+                posts
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-profiles-Profile"
+                aria-label="Link to this section: profiles(Profile)"
+              >
+                profiles
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-users-User"
+                aria-label="Link to this section: users(User)"
+              >
+                users
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-post_categories-post_categories"
+                aria-label="Link to this section: post_categories(post_categories)"
+              >
+                post_categories
+              </a>
+            </li>
+            <li class="my-2">
+              <a
+                class="anchor-link"
+                href="#0-0-1-post_tags-post_tags"
+                aria-label="Link to this section: post_tags(post_tags)"
+              >
+                post_tags
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </section>
+    </aside>
+
+    <div class="bd-cheatsheet container-fluid bg-body">
+      <section>
+        <select
+          id="entity-version-select"
+          class="form-select form-select-lg mb-3"
+          aria-label="Large select example"
+        >
+          <option value="typeorm-erd-0-0-1" selected>typeorm-erd 0.0.1</option>
+        </select>
+      </section>
+
+      <section class="entity-version-content-section content-typeorm-erd-0-0-1">
+        <h2>typeorm-erd 0.0.1</h2>
+        <div class="container-fluid">
+          <div class="container-fluid">
+            <h2 id="0-0-1-categories-Category" class="title is-3">
+              categories <small class="text-body-secondary">(Category)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-categories-Category"
+                aria-label="Link to this section: categories(Category)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  categories<small class="text-body-secondary"
+                    >(Category)</small
+                  >
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-id"
+                        aria-label="Link to this section: id in categories(Category)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-id"
+                        aria-label="Link to this section: id in categories(Category)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-name"
+                        aria-label="Link to this section: name in categories(Category)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-name"
+                        aria-label="Link to this section: name in categories(Category)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>*varchar</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-description">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-description"
+                        aria-label="Link to this section: description in categories(Category)"
+                        >#</a
+                      >
+                      <span>description</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-description">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-description"
+                        aria-label="Link to this section: description in categories(Category)"
+                        >#</a
+                      >
+                      <span>description</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-postCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-postCount"
+                        aria-label="Link to this section: postCount in categories(Category)"
+                        >#</a
+                      >
+                      <span>postCount</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-postCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-postCount"
+                        aria-label="Link to this section: postCount in categories(Category)"
+                        >#</a
+                      >
+                      <span>postCount</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*integer</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-createdAt"
+                        aria-label="Link to this section: createdAt in categories(Category)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-createdAt"
+                        aria-label="Link to this section: createdAt in categories(Category)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-categories-Category-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-updatedAt"
+                        aria-label="Link to this section: updatedAt in categories(Category)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td id="0-0-1-categories-Category-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-updatedAt"
+                        aria-label="Link to this section: updatedAt in categories(Category)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  categories<small class="text-body-secondary"
+                    >(Category)</small
+                  >
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-categories-Category-UQ_8b0be371d28245da6e4f4b61878"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-UQ_8b0be371d28245da6e4f4b61878"
+                        aria-label="Link to this section: UQ_8b0be371d28245da6e4f4b61878 in categories(Category)"
+                        >#</a
+                      >
+                      <span>UQ_8b0be371d28245da6e4f4b61878</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-categories-Category-UQ_8b0be371d28245da6e4f4b61878"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-categories-Category-UQ_8b0be371d28245da6e4f4b61878"
+                        aria-label="Link to this section: UQ_8b0be371d28245da6e4f4b61878 in categories(Category)"
+                        >#</a
+                      >
+                      <span>UQ_8b0be371d28245da6e4f4b61878</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">Unique</span>
+                    </td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>name</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-comments-Comment" class="title is-3">
+              comments <small class="text-body-secondary">(Comment)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-comments-Comment"
+                aria-label="Link to this section: comments(Comment)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  comments<small class="text-body-secondary">(Comment)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-id"
+                        aria-label="Link to this section: id in comments(Comment)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-id"
+                        aria-label="Link to this section: id in comments(Comment)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-content">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-content"
+                        aria-label="Link to this section: content in comments(Comment)"
+                        >#</a
+                      >
+                      <span>content</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-content">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-content"
+                        aria-label="Link to this section: content in comments(Comment)"
+                        >#</a
+                      >
+                      <span>content</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*text</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-likeCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-likeCount"
+                        aria-label="Link to this section: likeCount in comments(Comment)"
+                        >#</a
+                      >
+                      <span>likeCount</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-likeCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-likeCount"
+                        aria-label="Link to this section: likeCount in comments(Comment)"
+                        >#</a
+                      >
+                      <span>likeCount</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*integer</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-isDeleted">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-isDeleted"
+                        aria-label="Link to this section: isDeleted in comments(Comment)"
+                        >#</a
+                      >
+                      <span>isDeleted</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-isDeleted">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-isDeleted"
+                        aria-label="Link to this section: isDeleted in comments(Comment)"
+                        >#</a
+                      >
+                      <span>isDeleted</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*boolean</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-createdAt"
+                        aria-label="Link to this section: createdAt in comments(Comment)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-createdAt"
+                        aria-label="Link to this section: createdAt in comments(Comment)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-updatedAt"
+                        aria-label="Link to this section: updatedAt in comments(Comment)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-updatedAt"
+                        aria-label="Link to this section: updatedAt in comments(Comment)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-authorId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-authorId"
+                        aria-label="Link to this section: authorId in comments(Comment)"
+                        >#</a
+                      >
+                      <span>authorId</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-author">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-author"
+                        aria-label="Link to this section: author in comments(Comment)"
+                        >#</a
+                      >
+                      <span>author</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-postId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-postId"
+                        aria-label="Link to this section: postId in comments(Comment)"
+                        >#</a
+                      >
+                      <span>postId</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-post">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-post"
+                        aria-label="Link to this section: post in comments(Comment)"
+                        >#</a
+                      >
+                      <span>post</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-comments-Comment-parentId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-parentId"
+                        aria-label="Link to this section: parentId in comments(Comment)"
+                        >#</a
+                      >
+                      <span>parentId</span>
+                    </td>
+
+                    <td id="0-0-1-comments-Comment-parent">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-comments-Comment-parent"
+                        aria-label="Link to this section: parent in comments(Comment)"
+                        >#</a
+                      >
+                      <span>parent</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid"></div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-likes-Like" class="title is-3">
+              likes <small class="text-body-secondary">(Like)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-likes-Like"
+                aria-label="Link to this section: likes(Like)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  likes<small class="text-body-secondary">(Like)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-likes-Like-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-id"
+                        aria-label="Link to this section: id in likes(Like)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-likes-Like-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-id"
+                        aria-label="Link to this section: id in likes(Like)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-likes-Like-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-createdAt"
+                        aria-label="Link to this section: createdAt in likes(Like)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-likes-Like-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-createdAt"
+                        aria-label="Link to this section: createdAt in likes(Like)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-likes-Like-userId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-userId"
+                        aria-label="Link to this section: userId in likes(Like)"
+                        >#</a
+                      >
+                      <span>userId</span>
+                    </td>
+
+                    <td id="0-0-1-likes-Like-user">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-user"
+                        aria-label="Link to this section: user in likes(Like)"
+                        >#</a
+                      >
+                      <span>user</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-likes-Like-postId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-postId"
+                        aria-label="Link to this section: postId in likes(Like)"
+                        >#</a
+                      >
+                      <span>postId</span>
+                    </td>
+
+                    <td id="0-0-1-likes-Like-post">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-post"
+                        aria-label="Link to this section: post in likes(Like)"
+                        >#</a
+                      >
+                      <span>post</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  likes<small class="text-body-secondary">(Like)</small>
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-likes-Like-UQ_74b9b8cd79a1014e50135f266fe">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-UQ_74b9b8cd79a1014e50135f266fe"
+                        aria-label="Link to this section: UQ_74b9b8cd79a1014e50135f266fe in likes(Like)"
+                        >#</a
+                      >
+                      <span>UQ_74b9b8cd79a1014e50135f266fe</span>
+                    </td>
+
+                    <td id="0-0-1-likes-Like-UQ_74b9b8cd79a1014e50135f266fe">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-likes-Like-UQ_74b9b8cd79a1014e50135f266fe"
+                        aria-label="Link to this section: UQ_74b9b8cd79a1014e50135f266fe in likes(Like)"
+                        >#</a
+                      >
+                      <span>UQ_74b9b8cd79a1014e50135f266fe</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">Unique</span>
+                    </td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>userId</li>
+                        <li>postId</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-tags-Tag" class="title is-3">
+              tags <small class="text-body-secondary">(Tag)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-tags-Tag"
+                aria-label="Link to this section: tags(Tag)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  tags<small class="text-body-secondary">(Tag)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-id"
+                        aria-label="Link to this section: id in tags(Tag)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-id"
+                        aria-label="Link to this section: id in tags(Tag)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-name"
+                        aria-label="Link to this section: name in tags(Tag)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-name"
+                        aria-label="Link to this section: name in tags(Tag)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>*varchar</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-slug">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-slug"
+                        aria-label="Link to this section: slug in tags(Tag)"
+                        >#</a
+                      >
+                      <span>slug</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-slug">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-slug"
+                        aria-label="Link to this section: slug in tags(Tag)"
+                        >#</a
+                      >
+                      <span>slug</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-usageCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-usageCount"
+                        aria-label="Link to this section: usageCount in tags(Tag)"
+                        >#</a
+                      >
+                      <span>usageCount</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-usageCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-usageCount"
+                        aria-label="Link to this section: usageCount in tags(Tag)"
+                        >#</a
+                      >
+                      <span>usageCount</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*integer</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-createdAt"
+                        aria-label="Link to this section: createdAt in tags(Tag)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-createdAt"
+                        aria-label="Link to this section: createdAt in tags(Tag)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  tags<small class="text-body-secondary">(Tag)</small>
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-tags-Tag-UQ_d90243459a697eadb8ad56e9092">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-UQ_d90243459a697eadb8ad56e9092"
+                        aria-label="Link to this section: UQ_d90243459a697eadb8ad56e9092 in tags(Tag)"
+                        >#</a
+                      >
+                      <span>UQ_d90243459a697eadb8ad56e9092</span>
+                    </td>
+
+                    <td id="0-0-1-tags-Tag-UQ_d90243459a697eadb8ad56e9092">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-tags-Tag-UQ_d90243459a697eadb8ad56e9092"
+                        aria-label="Link to this section: UQ_d90243459a697eadb8ad56e9092 in tags(Tag)"
+                        >#</a
+                      >
+                      <span>UQ_d90243459a697eadb8ad56e9092</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">Unique</span>
+                    </td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>name</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-posts-Post" class="title is-3">
+              posts <small class="text-body-secondary">(Post)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-posts-Post"
+                aria-label="Link to this section: posts(Post)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  posts<small class="text-body-secondary">(Post)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-id"
+                        aria-label="Link to this section: id in posts(Post)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-id"
+                        aria-label="Link to this section: id in posts(Post)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-title">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-title"
+                        aria-label="Link to this section: title in posts(Post)"
+                        >#</a
+                      >
+                      <span>title</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-title">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-title"
+                        aria-label="Link to this section: title in posts(Post)"
+                        >#</a
+                      >
+                      <span>title</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*varchar</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-content">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-content"
+                        aria-label="Link to this section: content in posts(Post)"
+                        >#</a
+                      >
+                      <span>content</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-content">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-content"
+                        aria-label="Link to this section: content in posts(Post)"
+                        >#</a
+                      >
+                      <span>content</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*text</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-isPublished">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-isPublished"
+                        aria-label="Link to this section: isPublished in posts(Post)"
+                        >#</a
+                      >
+                      <span>isPublished</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-isPublished">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-isPublished"
+                        aria-label="Link to this section: isPublished in posts(Post)"
+                        >#</a
+                      >
+                      <span>isPublished</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*boolean</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-viewCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-viewCount"
+                        aria-label="Link to this section: viewCount in posts(Post)"
+                        >#</a
+                      >
+                      <span>viewCount</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-viewCount">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-viewCount"
+                        aria-label="Link to this section: viewCount in posts(Post)"
+                        >#</a
+                      >
+                      <span>viewCount</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*integer</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-createdAt"
+                        aria-label="Link to this section: createdAt in posts(Post)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-createdAt"
+                        aria-label="Link to this section: createdAt in posts(Post)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-updatedAt"
+                        aria-label="Link to this section: updatedAt in posts(Post)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-updatedAt"
+                        aria-label="Link to this section: updatedAt in posts(Post)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-posts-Post-authorId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-authorId"
+                        aria-label="Link to this section: authorId in posts(Post)"
+                        >#</a
+                      >
+                      <span>authorId</span>
+                    </td>
+
+                    <td id="0-0-1-posts-Post-author">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-posts-Post-author"
+                        aria-label="Link to this section: author in posts(Post)"
+                        >#</a
+                      >
+                      <span>author</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid"></div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-profiles-Profile" class="title is-3">
+              profiles <small class="text-body-secondary">(Profile)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-profiles-Profile"
+                aria-label="Link to this section: profiles(Profile)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  profiles<small class="text-body-secondary">(Profile)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-id"
+                        aria-label="Link to this section: id in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-id"
+                        aria-label="Link to this section: id in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-bio">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-bio"
+                        aria-label="Link to this section: bio in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>bio</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-bio">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-bio"
+                        aria-label="Link to this section: bio in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>bio</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-avatarUrl">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-avatarUrl"
+                        aria-label="Link to this section: avatarUrl in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>avatarUrl</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-avatarUrl">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-avatarUrl"
+                        aria-label="Link to this section: avatarUrl in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>avatarUrl</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-website">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-website"
+                        aria-label="Link to this section: website in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>website</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-website">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-website"
+                        aria-label="Link to this section: website in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>website</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-location">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-location"
+                        aria-label="Link to this section: location in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>location</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-location">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-location"
+                        aria-label="Link to this section: location in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>location</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>varchar</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-birthDate">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-birthDate"
+                        aria-label="Link to this section: birthDate in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>birthDate</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-birthDate">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-birthDate"
+                        aria-label="Link to this section: birthDate in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>birthDate</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>date</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-createdAt"
+                        aria-label="Link to this section: createdAt in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-createdAt"
+                        aria-label="Link to this section: createdAt in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-updatedAt"
+                        aria-label="Link to this section: updatedAt in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-updatedAt"
+                        aria-label="Link to this section: updatedAt in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-profiles-Profile-userId">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-userId"
+                        aria-label="Link to this section: userId in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>userId</span>
+                    </td>
+
+                    <td id="0-0-1-profiles-Profile-user">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-user"
+                        aria-label="Link to this section: user in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>user</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-info">FK</span>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>number</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  profiles<small class="text-body-secondary">(Profile)</small>
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-profiles-Profile-REL_315ecd98bd1a42dcf2ec4e2e98"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-REL_315ecd98bd1a42dcf2ec4e2e98"
+                        aria-label="Link to this section: REL_315ecd98bd1a42dcf2ec4e2e98 in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>REL_315ecd98bd1a42dcf2ec4e2e98</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-profiles-Profile-REL_315ecd98bd1a42dcf2ec4e2e98"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-profiles-Profile-REL_315ecd98bd1a42dcf2ec4e2e98"
+                        aria-label="Link to this section: REL_315ecd98bd1a42dcf2ec4e2e98 in profiles(Profile)"
+                        >#</a
+                      >
+                      <span>REL_315ecd98bd1a42dcf2ec4e2e98</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">Unique</span>
+                    </td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>userId</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-users-User" class="title is-3">
+              users <small class="text-body-secondary">(User)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-users-User"
+                aria-label="Link to this section: users(User)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  users<small class="text-body-secondary">(User)</small>
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-id"
+                        aria-label="Link to this section: id in users(User)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-id"
+                        aria-label="Link to this section: id in users(User)"
+                        >#</a
+                      >
+                      <span>id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-email">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-email"
+                        aria-label="Link to this section: email in users(User)"
+                        >#</a
+                      >
+                      <span>email</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-email">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-email"
+                        aria-label="Link to this section: email in users(User)"
+                        >#</a
+                      >
+                      <span>email</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">UK</span>
+                    </td>
+
+                    <td>
+                      <span>*varchar</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-name"
+                        aria-label="Link to this section: name in users(User)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-name">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-name"
+                        aria-label="Link to this section: name in users(User)"
+                        >#</a
+                      >
+                      <span>name</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*varchar</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-age">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-age"
+                        aria-label="Link to this section: age in users(User)"
+                        >#</a
+                      >
+                      <span>age</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-age">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-age"
+                        aria-label="Link to this section: age in users(User)"
+                        >#</a
+                      >
+                      <span>age</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>integer</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-danger">NULLABLE</span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-isActive">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-isActive"
+                        aria-label="Link to this section: isActive in users(User)"
+                        >#</a
+                      >
+                      <span>isActive</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-isActive">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-isActive"
+                        aria-label="Link to this section: isActive in users(User)"
+                        >#</a
+                      >
+                      <span>isActive</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*boolean</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-createdAt"
+                        aria-label="Link to this section: createdAt in users(User)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-createdAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-createdAt"
+                        aria-label="Link to this section: createdAt in users(User)"
+                        >#</a
+                      >
+                      <span>createdAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-updatedAt"
+                        aria-label="Link to this section: updatedAt in users(User)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-updatedAt">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-updatedAt"
+                        aria-label="Link to this section: updatedAt in users(User)"
+                        >#</a
+                      >
+                      <span>updatedAt</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span>*timestamp</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  users<small class="text-body-secondary">(User)</small>
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-users-User-UQ_97672ac88f789774dd47f7c8be3">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-UQ_97672ac88f789774dd47f7c8be3"
+                        aria-label="Link to this section: UQ_97672ac88f789774dd47f7c8be3 in users(User)"
+                        >#</a
+                      >
+                      <span>UQ_97672ac88f789774dd47f7c8be3</span>
+                    </td>
+
+                    <td id="0-0-1-users-User-UQ_97672ac88f789774dd47f7c8be3">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-users-User-UQ_97672ac88f789774dd47f7c8be3"
+                        aria-label="Link to this section: UQ_97672ac88f789774dd47f7c8be3 in users(User)"
+                        >#</a
+                      >
+                      <span>UQ_97672ac88f789774dd47f7c8be3</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-warning">Unique</span>
+                    </td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>email</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-post_categories-post_categories" class="title is-3">
+              post_categories
+              <small class="text-body-secondary">(post_categories)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-post_categories-post_categories"
+                aria-label="Link to this section: post_categories(post_categories)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  post_categories<small class="text-body-secondary"
+                    >(post_categories)</small
+                  >
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-post_categories-post_categories-post_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-post_id"
+                        aria-label="Link to this section: post_id in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>post_id</span>
+                    </td>
+
+                    <td id="0-0-1-post_categories-post_categories-post_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-post_id"
+                        aria-label="Link to this section: post_id in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>post_id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-post_categories-post_categories-category_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-category_id"
+                        aria-label="Link to this section: category_id in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>category_id</span>
+                    </td>
+
+                    <td id="0-0-1-post_categories-post_categories-category_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-category_id"
+                        aria-label="Link to this section: category_id in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>category_id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  post_categories<small class="text-body-secondary"
+                    >(post_categories)</small
+                  >
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-post_categories-post_categories-IDX_becbe37977577e3eeb089b69fe"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-IDX_becbe37977577e3eeb089b69fe"
+                        aria-label="Link to this section: IDX_becbe37977577e3eeb089b69fe in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>IDX_becbe37977577e3eeb089b69fe</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-post_categories-post_categories-IDX_becbe37977577e3eeb089b69fe"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-IDX_becbe37977577e3eeb089b69fe"
+                        aria-label="Link to this section: IDX_becbe37977577e3eeb089b69fe in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>IDX_becbe37977577e3eeb089b69fe</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>post_id</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-post_categories-post_categories-IDX_f6e2655c798334198182db6399"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-IDX_f6e2655c798334198182db6399"
+                        aria-label="Link to this section: IDX_f6e2655c798334198182db6399 in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>IDX_f6e2655c798334198182db6399</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-post_categories-post_categories-IDX_f6e2655c798334198182db6399"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_categories-post_categories-IDX_f6e2655c798334198182db6399"
+                        aria-label="Link to this section: IDX_f6e2655c798334198182db6399 in post_categories(post_categories)"
+                        >#</a
+                      >
+                      <span>IDX_f6e2655c798334198182db6399</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>category_id</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+          <div class="container-fluid">
+            <h2 id="0-0-1-post_tags-post_tags" class="title is-3">
+              post_tags <small class="text-body-secondary">(post_tags)</small>
+              <a
+                class="anchor-link"
+                href="#0-0-1-post_tags-post_tags"
+                aria-label="Link to this section: post_tags(post_tags)"
+                >#</a
+              >
+            </h2>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-grid-3x2-gap"></i>
+                  post_tags<small class="text-body-secondary"
+                    >(post_tags)</small
+                  >
+                  columns
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Attribute</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Charset</th>
+                    <th>Comment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-post_tags-post_tags-post_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-post_id"
+                        aria-label="Link to this section: post_id in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>post_id</span>
+                    </td>
+
+                    <td id="0-0-1-post_tags-post_tags-post_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-post_id"
+                        aria-label="Link to this section: post_id in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>post_id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td id="0-0-1-post_tags-post_tags-tag_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-tag_id"
+                        aria-label="Link to this section: tag_id in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>tag_id</span>
+                    </td>
+
+                    <td id="0-0-1-post_tags-post_tags-tag_id">
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-tag_id"
+                        aria-label="Link to this section: tag_id in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>tag_id</span>
+                    </td>
+
+                    <td>
+                      <span class="badge text-bg-success">PK</span>
+                      <span class="badge text-bg-info">FK</span>
+                    </td>
+
+                    <td>
+                      <span>*number</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <span></span>
+                    </td>
+
+                    <td>
+                      <span></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mx-auto p-2" style="width: 100%"></div>
+
+            <div class="container-fluid">
+              <table class="table table-striped table-hover caption-top">
+                <caption>
+                  <i class="bi bi-key"></i>
+                  post_tags<small class="text-body-secondary"
+                    >(post_tags)</small
+                  >
+                  indices
+                </caption>
+                <thead>
+                  <tr>
+                    <th>&nbsp;</th>
+                    <!-- changing status -->
+                    <th>Database Name</th>
+                    <th>Property Name</th>
+                    <th>Unique</th>
+                    <th>Columns</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-post_tags-post_tags-IDX_5df4e8dc2cb3e668b962362265"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-IDX_5df4e8dc2cb3e668b962362265"
+                        aria-label="Link to this section: IDX_5df4e8dc2cb3e668b962362265 in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>IDX_5df4e8dc2cb3e668b962362265</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-post_tags-post_tags-IDX_5df4e8dc2cb3e668b962362265"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-IDX_5df4e8dc2cb3e668b962362265"
+                        aria-label="Link to this section: IDX_5df4e8dc2cb3e668b962362265 in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>IDX_5df4e8dc2cb3e668b962362265</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>post_id</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+
+                    <td
+                      id="0-0-1-post_tags-post_tags-IDX_192ab488d1c284ac9abe2e3035"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-IDX_192ab488d1c284ac9abe2e3035"
+                        aria-label="Link to this section: IDX_192ab488d1c284ac9abe2e3035 in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>IDX_192ab488d1c284ac9abe2e3035</span>
+                    </td>
+
+                    <td
+                      id="0-0-1-post_tags-post_tags-IDX_192ab488d1c284ac9abe2e3035"
+                    >
+                      <a
+                        class="anchor-link"
+                        href="#0-0-1-post_tags-post_tags-IDX_192ab488d1c284ac9abe2e3035"
+                        aria-label="Link to this section: IDX_192ab488d1c284ac9abe2e3035 in post_tags(post_tags)"
+                        >#</a
+                      >
+                      <span>IDX_192ab488d1c284ac9abe2e3035</span>
+                    </td>
+
+                    <td></td>
+
+                    <td>
+                      <ul style="margin: 0">
+                        <li>tag_id</li>
+                      </ul>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mx-auto p-4" style="width: 100%"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+
+  <script>
+    var so = document.getElementById("entity-version-select");
+
+    so.addEventListener("change", (e) => {
+      var sectionsForContentHide = document.getElementsByClassName(
+        "entity-version-content-section",
+      );
+      [].forEach.call(sectionsForContentHide, (element) => {
+        element.className = element.className
+          .split(" ")
+          .filter((className) => className !== "hide")
+          .concat(["hide"])
+          .join(" ");
+      });
+
+      var sectionsForTocHide = document.getElementsByClassName(
+        "entity-version-toc-section",
+      );
+      [].forEach.call(sectionsForTocHide, (element) => {
+        element.className = element.className
+          .split(" ")
+          .filter((className) => className !== "hide")
+          .concat(["hide"])
+          .join(" ");
+      });
+
+      var sectionsForContentReveal = document.querySelector(
+        ".content-" + e.target.value,
+      );
+      sectionsForContentReveal.className = sectionsForContentReveal.className
+        .split(" ")
+        .filter((className) => className !== "hide")
+        .join(" ");
+
+      var sectionsForTocReveal = document.querySelector(
+        ".toc-" + e.target.value,
+      );
+      sectionsForTocReveal.className = sectionsForTocReveal.className
+        .split(" ")
+        .filter((className) => className !== "hide")
+        .join(" ");
+    });
+  </script>
+</html>
