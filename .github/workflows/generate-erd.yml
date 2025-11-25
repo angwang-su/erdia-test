@@ -95,7 +95,8 @@ jobs:
         run: |
           if ! git rev-parse --verify gh-pages >/dev/null 2>&1; then
             git checkout --orphan gh-pages
-            git rm -rf .
+            git rm -rf . || true
+            rm -rf *
           else
             git checkout gh-pages
           fi
