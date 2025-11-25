@@ -292,6 +292,32 @@ erDiagram
 
 
 
+"bookmarks(Bookmark)" {
+  *number id    PK    
+  *timestamp createdAt    
+  number user    FK,UK    
+  number post    FK,UK    
+}
+
+
+"bookmarks(Bookmark)"  }o  --  o|  "users(User)":  "userId"
+"bookmarks(Bookmark)"  }o  --  o|  "posts(Post)":  "postId"
+
+"media(Media)" {
+  *number id    PK    
+  *varchar url    
+  *varchar type    
+  varchar thumbnailUrl    
+  integer size    
+  varchar mimeType    
+  *integer order    
+  *timestamp createdAt    
+  number post    FK    
+}
+
+
+"media(Media)"  }o  --  o|  "posts(Post)":  "postId"
+
 "posts(Post)" {
   *number id    PK    
   *varchar title    
@@ -321,6 +347,51 @@ erDiagram
 
 
 "profiles(Profile)"  |o  --  o|  "users(User)":  "userId"
+
+"notifications(Notification)" {
+  *number id    PK    
+  *varchar title    
+  *text message    
+  *varchar type    
+  *boolean isRead    
+  varchar link    
+  *timestamp createdAt    
+  number user    FK    
+}
+
+
+"notifications(Notification)"  }o  --  o|  "users(User)":  "userId"
+
+"follows(Follow)" {
+  *number id    PK    
+  *timestamp createdAt    
+  number follower    FK,UK    
+  number following    FK,UK    
+}
+
+
+"follows(Follow)"  }o  --  o|  "users(User)":  "followerId"
+"follows(Follow)"  }o  --  o|  "users(User)":  "followingId"
+
+"reports(Report)" {
+  *number id    PK    
+  *varchar type    
+  *varchar reason    
+  text description    
+  *varchar status    
+  *timestamp createdAt    
+  *timestamp updatedAt    
+  number reporter    FK    
+  number post    FK    
+  number comment    FK    
+  number reportedUser    FK    
+}
+
+
+"reports(Report)"  }o  --  o|  "users(User)":  "reporterId"
+"reports(Report)"  }o  --  o|  "posts(Post)":  "postId"
+"reports(Report)"  }o  --  o|  "comments(Comment)":  "commentId"
+"reports(Report)"  }o  --  o|  "users(User)":  "reportedUserId"
 
 "users(User)" {
   *number id    PK    
@@ -435,6 +506,32 @@ erDiagram
 
 
 
+"bookmarks(Bookmark)" {
+  *number id    PK    
+  *timestamp createdAt    
+  number user    FK,UK    
+  number post    FK,UK    
+}
+
+
+"bookmarks(Bookmark)"  }o  --  o|  "users(User)":  "userId"
+"bookmarks(Bookmark)"  }o  --  o|  "posts(Post)":  "postId"
+
+"media(Media)" {
+  *number id    PK    
+  *varchar url    
+  *varchar type    
+  varchar thumbnailUrl    
+  integer size    
+  varchar mimeType    
+  *integer order    
+  *timestamp createdAt    
+  number post    FK    
+}
+
+
+"media(Media)"  }o  --  o|  "posts(Post)":  "postId"
+
 "posts(Post)" {
   *number id    PK    
   *varchar title    
@@ -464,6 +561,51 @@ erDiagram
 
 
 "profiles(Profile)"  |o  --  o|  "users(User)":  "userId"
+
+"notifications(Notification)" {
+  *number id    PK    
+  *varchar title    
+  *text message    
+  *varchar type    
+  *boolean isRead    
+  varchar link    
+  *timestamp createdAt    
+  number user    FK    
+}
+
+
+"notifications(Notification)"  }o  --  o|  "users(User)":  "userId"
+
+"follows(Follow)" {
+  *number id    PK    
+  *timestamp createdAt    
+  number follower    FK,UK    
+  number following    FK,UK    
+}
+
+
+"follows(Follow)"  }o  --  o|  "users(User)":  "followerId"
+"follows(Follow)"  }o  --  o|  "users(User)":  "followingId"
+
+"reports(Report)" {
+  *number id    PK    
+  *varchar type    
+  *varchar reason    
+  text description    
+  *varchar status    
+  *timestamp createdAt    
+  *timestamp updatedAt    
+  number reporter    FK    
+  number post    FK    
+  number comment    FK    
+  number reportedUser    FK    
+}
+
+
+"reports(Report)"  }o  --  o|  "users(User)":  "reporterId"
+"reports(Report)"  }o  --  o|  "posts(Post)":  "postId"
+"reports(Report)"  }o  --  o|  "comments(Comment)":  "commentId"
+"reports(Report)"  }o  --  o|  "users(User)":  "reportedUserId"
 
 "users(User)" {
   *number id    PK    
