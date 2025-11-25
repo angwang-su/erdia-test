@@ -2,20 +2,19 @@ name: Generate ERD
 
 on:
   push:
-    branches: [main, develop]
-    paths:
-      - 'src/entities/**' # 엔티티 변경 시에만 실행
-  pull_request:
-    branches: [main, develop]
+    branches: [main, staging, develop]
     paths:
       - 'src/entities/**'
-  workflow_dispatch: # 수동 실행 가능
+  pull_request:
+    branches: [main, staging, develop]
+    paths:
+      - 'src/entities/**'
+  workflow_dispatch:
 
 jobs:
   generate-erd:
     runs-on: ubuntu-latest
 
-    # PostgreSQL 서비스 추가
     services:
       postgres:
         image: postgres:15
@@ -57,37 +56,77 @@ jobs:
       - name: Generate ERD
         run: npx erdia build -d dist/src/data-source.js -o erd-output
 
-      - name: List ERD output
-        run: ls -la erd-output/
-
       - name: Upload ERD artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: erd-output
+          name: erd-output-${{ github.ref_name }}
           path: erd-output/
           retention-days: 30
-          if-no-files-found: error
 
-  # GitHub Pages에 ERD 배포 (main 브랜치만)
+  # GitHub Pages 배포 (브랜치별 폴더)
   deploy-erd:
     needs: generate-erd
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push'
 
     permissions:
       pages: write
       id-token: write
+      contents: read
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Create gh-pages directory if not exists
+        run: mkdir -p gh-pages
+
       - name: Download ERD artifacts
         uses: actions/download-artifact@v4
         with:
-          name: erd-output
+          name: erd-output-${{ github.ref_name }}
           path: erd-output
+
+      - name: Copy to branch folder
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          if [ "$BRANCH_NAME" = "main" ]; then
+            # main 브랜치는 루트에 배포
+            cp -r erd-output/* gh-pages/
+          else
+            # 다른 브랜치는 브랜치 이름 폴더에 배포
+            mkdir -p gh-pages/$BRANCH_NAME
+            cp -r erd-output/* gh-pages/$BRANCH_NAME/
+          fi
+
+      - name: Create index with branch links
+        run: |
+          cat > gh-pages/branches.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>ERD by Branch</title>
+            <style>
+              body { font-family: system-ui; padding: 2rem; }
+              a { display: block; margin: 1rem 0; font-size: 1.2rem; }
+            </style>
+          </head>
+          <body>
+            <h1>📊 ERD by Branch</h1>
+            <a href="./">🔵 main (production)</a>
+            <a href="./staging/">🟡 staging</a>
+            <a href="./develop/">🟢 develop</a>
+          </body>
+          </html>
+          EOF
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -95,7 +134,7 @@ jobs:
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: erd-output
+          path: gh-pages
 
       - name: Deploy to GitHub Pages
         id: deployment
