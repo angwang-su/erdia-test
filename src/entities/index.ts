@@ -5,3 +5,8 @@ export { Profile } from './profile.entity';
 export { Category } from './category.entity';
 export { Tag } from './tag.entity';
 export { User } from './user.entity';
+export { Notification } from './notification.entity';
+export { Follow } from './follow.entity';
+export { Bookmark } from './bookmark.entity';
+export { Media } from './media.entity';
+export { Report } from './report.entity';

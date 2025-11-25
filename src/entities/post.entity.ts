@@ -14,6 +14,8 @@ import { Category } from './category.entity';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { Tag } from './tag.entity';
+import { Bookmark } from './bookmark.entity';
+import { Media } from './media.entity';
 
 @Entity('posts')
 export class Post {
@@ -62,4 +64,10 @@ export class Post {
 
   @OneToMany(() => Like, (like) => like.post)
   likes: Like[];
+
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.post)
+  bookmarks: Bookmark[];
+
+  @OneToMany(() => Media, (media) => media.post)
+  media: Media[];
 }
