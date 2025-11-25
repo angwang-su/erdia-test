@@ -7,9 +7,13 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Category } from './category.entity';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
+import { Tag } from './tag.entity';
 
 @Entity('posts')
 export class Post {
@@ -39,9 +43,23 @@ export class Post {
 
   @ManyToMany(() => Category, (category) => category.posts)
   @JoinTable({
-    name: 'post_categories_example',
+    name: 'post_categories',
     joinColumn: { name: 'post_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
   })
   categories: Category[];
+
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  @JoinTable({
+    name: 'post_tags',
+    joinColumn: { name: 'post_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.post)
+  likes: Like[];
 }

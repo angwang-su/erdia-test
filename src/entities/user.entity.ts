@@ -5,8 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { Post } from './post.entity';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
+import { Profile } from './profile.entity';
 
 @Entity('users')
 export class User {
@@ -33,4 +37,13 @@ export class User {
 
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
+
+  @OneToMany(() => Comment, (comment) => comment.author)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }
