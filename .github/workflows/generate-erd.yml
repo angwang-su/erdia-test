@@ -72,22 +72,34 @@ jobs:
     permissions:
       pages: write
       id-token: write
-      contents: read
+      contents: write
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout gh-pages branch
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: gh-pages
-          path: gh-pages
+          fetch-depth: 0
         continue-on-error: true
 
-      - name: Create gh-pages directory if not exists
-        run: mkdir -p gh-pages
+      - name: Setup git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create gh-pages branch if not exists
+        run: |
+          if ! git rev-parse --verify gh-pages >/dev/null 2>&1; then
+            git checkout --orphan gh-pages
+            git rm -rf . || true
+            rm -rf *
+          else
+            git checkout gh-pages
+          fi
 
       - name: Download ERD artifacts
         uses: actions/download-artifact@v4
@@ -98,15 +110,16 @@ jobs:
       - name: Copy to branch folder
         run: |
           BRANCH_NAME="${{ github.ref_name }}"
-          # 모든 브랜치를 브랜치 이름 폴더에 배포
-          mkdir -p gh-pages/$BRANCH_NAME
-          cp -r erd-output/* gh-pages/$BRANCH_NAME/
+          # 브랜치 폴더 생성 및 복사
+          mkdir -p $BRANCH_NAME
+          rm -rf $BRANCH_NAME/*
+          cp -r erd-output/* $BRANCH_NAME/
 
       - name: Create root index page
         run: |
           # 루트에 index.html이 없으면 브랜치 선택 페이지 생성
-          if [ ! -f gh-pages/index.html ]; then
-            cat > gh-pages/index.html << 'EOF'
+          if [ ! -f index.html ]; then
+            cat > index.html << 'EOF'
           <!DOCTYPE html>
           <html>
           <head>
@@ -163,13 +176,19 @@ jobs:
           EOF
           fi
 
+      - name: Commit and push
+        run: |
+          git add .
+          git commit -m "Deploy ERD for ${{ github.ref_name }} branch" || echo "No changes to commit"
+          git push origin gh-pages
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: gh-pages
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
