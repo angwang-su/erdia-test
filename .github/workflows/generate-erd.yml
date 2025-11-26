@@ -2,7 +2,7 @@ name: Generate ERD
 
 on:
   push:
-    branches: [main, staging, develop]
+    branches: [develop]
     paths:
       - 'src/entities/**'
   pull_request:

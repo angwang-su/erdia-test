@@ -18,5 +18,4 @@ const AppDataSource = new DataSource({
   logging: process.env.NODE_ENV !== 'production',
 });
 
-// erdia: 단일 default export만 허용
 export default AppDataSource;
