@@ -405,6 +405,14 @@ erDiagram
 
 
 
+"logs(Log)" {
+  *number id    PK    
+  *varchar action    
+  *timestamp createdAt    
+}
+
+
+
 "post_categories(post_categories)" {
   *number post_id    FK,PK    
   *number category_id    FK,PK    
@@ -615,6 +623,14 @@ erDiagram
   *boolean isActive    
   *timestamp createdAt    
   *timestamp updatedAt    
+}
+
+
+
+"logs(Log)" {
+  *number id    PK    
+  *varchar action    
+  *timestamp createdAt    
 }
 
 
