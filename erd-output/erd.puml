@@ -1,0 +1,161 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+
+entity "categories" as categories {
+  ***id** : integer
+  *name : varchar
+   description : varchar
+  *postCount : integer
+  *createdAt : timestamp
+  *updatedAt : timestamp
+}
+
+entity "comments" as comments {
+  ***id** : integer
+  *content : text
+  *likeCount : integer
+  *isDeleted : boolean
+  *createdAt : timestamp
+  *updatedAt : timestamp
+   authorId : integer
+   postId : integer
+   parentId : integer
+}
+
+entity "likes" as likes {
+  ***id** : integer
+  *createdAt : timestamp
+   userId : integer
+   postId : integer
+}
+
+entity "tags" as tags {
+  ***id** : integer
+  *name : varchar
+   slug : varchar
+  *usageCount : integer
+  *createdAt : timestamp
+}
+
+entity "media" as media {
+  ***id** : integer
+  *url : varchar
+  *type : varchar
+   thumbnailUrl : varchar
+   size : integer
+   mimeType : varchar
+  *order : integer
+  *createdAt : timestamp
+   postId : integer
+}
+
+entity "posts" as posts {
+  ***id** : integer
+  *title : varchar
+  *content : text
+  *isPublished : boolean
+  *viewCount : integer
+  *createdAt : timestamp
+  *updatedAt : timestamp
+   authorId : integer
+}
+
+entity "profiles" as profiles {
+  ***id** : integer
+   bio : varchar
+   avatarUrl : varchar
+   website : varchar
+   location : varchar
+   birthDate : date
+  *createdAt : timestamp
+  *updatedAt : timestamp
+   userId : integer
+}
+
+entity "notifications" as notifications {
+  ***id** : integer
+  *title : varchar
+  *message : text
+  *type : varchar
+  *isRead : boolean
+   link : varchar
+  *createdAt : timestamp
+   userId : integer
+}
+
+entity "follows" as follows {
+  ***id** : integer
+  *createdAt : timestamp
+   followerId : integer
+   followingId : integer
+}
+
+entity "reports" as reports {
+  ***id** : integer
+  *type : varchar
+  *reason : varchar
+   description : text
+  *status : varchar
+  *createdAt : timestamp
+  *updatedAt : timestamp
+   reporterId : integer
+   postId : integer
+   commentId : integer
+   reportedUserId : integer
+}
+
+entity "users" as users {
+  ***id** : integer
+  *email : varchar
+  *name : varchar
+   age : integer
+  *isActive : boolean
+  *createdAt : timestamp
+  *updatedAt : timestamp
+}
+
+entity "bookmarks" as bookmarks {
+  ***id** : integer
+  *createdAt : timestamp
+   userId : integer
+   postId : integer
+}
+
+entity "logs" as logs {
+  ***id** : integer
+  *action : varchar
+  *createdAt : timestamp
+}
+
+entity "post_categories" as post_categories {
+  ***post_id** : integer
+  ***category_id** : integer
+}
+
+entity "post_tags" as post_tags {
+  ***post_id** : integer
+  ***tag_id** : integer
+}
+
+users ||..o{ comments : author
+posts ||..o{ comments : post
+comments ||..o{ comments : parent
+users ||..o{ likes : user
+posts ||..o{ likes : post
+posts ||..o{ media : post
+users ||..o{ posts : author
+posts }o..o{ categories : categories
+posts }o..o{ tags : tags
+profiles ||..|| users : user
+users ||..o{ notifications : user
+users ||..o{ follows : follower
+users ||..o{ follows : following
+users ||..o{ reports : reporter
+posts ||..o{ reports : post
+comments ||..o{ reports : comment
+users ||..o{ reports : reportedUser
+users ||..o{ bookmarks : user
+posts ||..o{ bookmarks : post
+@enduml
