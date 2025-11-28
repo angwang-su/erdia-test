@@ -5,10 +5,12 @@ on:
     branches: [develop]
     paths:
       - 'src/entities/**'
+      - '.github/workflows/generate-erd.yml'
   pull_request:
     branches: [main, staging, develop]
     paths:
       - 'src/entities/**'
+      - '.github/workflows/generate-erd.yml'
   workflow_dispatch:
 
 jobs:
@@ -55,6 +57,9 @@ jobs:
 
       - name: Generate ERD
         run: npx erdia build -d dist/src/data-source.js -o erd-output
+
+      - name: Generate PlantUML
+        run: yarn erdia:build:puml
 
       - name: Upload ERD artifacts
         uses: actions/upload-artifact@v4
