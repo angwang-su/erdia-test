@@ -146,34 +146,97 @@ jobs:
                 background: rgba(255,255,255,0.1);
                 border-radius: 20px;
                 backdrop-filter: blur(10px);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                max-width: 600px;
+                width: 90%;
               }
               h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
               p { color: #aaa; margin-bottom: 2rem; }
               .branches { display: flex; flex-direction: column; gap: 1rem; }
-              a {
-                display: block;
-                padding: 1rem 2rem;
+              
+              .branch-item {
+                background: rgba(255,255,255,0.05);
+                border-radius: 12px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                border: 1px solid rgba(255,255,255,0.1);
+              }
+              .branch-item:hover {
                 background: rgba(255,255,255,0.1);
-                border-radius: 10px;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+              }
+              
+              .main-link {
+                display: flex;
+                align-items: center;
+                padding: 1.2rem;
                 color: #fff;
                 text-decoration: none;
-                font-size: 1.1rem;
-                transition: all 0.3s;
+                font-size: 1.2rem;
+                font-weight: 500;
               }
-              a:hover { background: rgba(255,255,255,0.2); transform: translateX(5px); }
-              .main { border-left: 4px solid #3b82f6; }
-              .staging { border-left: 4px solid #eab308; }
-              .develop { border-left: 4px solid #22c55e; }
+              .main-link span { margin-right: 0.5rem; }
+              
+              .sub-links {
+                display: flex;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                background: rgba(0,0,0,0.1);
+              }
+              .sub-link {
+                flex: 1;
+                padding: 0.8rem;
+                text-align: center;
+                color: #ccc;
+                text-decoration: none;
+                font-size: 0.9rem;
+                transition: all 0.2s;
+              }
+              .sub-link:hover {
+                background: rgba(255,255,255,0.1);
+                color: #fff;
+              }
+              .sub-link:not(:last-child) {
+                border-right: 1px solid rgba(255,255,255,0.1);
+              }
+              
+              /* Branch specific colors */
+              .branch-item.main { border-left: 4px solid #3b82f6; }
+              .branch-item.staging { border-left: 4px solid #eab308; }
+              .branch-item.develop { border-left: 4px solid #22c55e; }
             </style>
           </head>
           <body>
             <div class="container">
               <h1>📊 ERD Documentation</h1>
-              <p>Select a branch to view the Entity Relationship Diagram</p>
+              <p>Select a branch or file to view</p>
               <div class="branches">
-                <a href="./main/" class="main">🔵 main (production)</a>
-                <a href="./staging/" class="staging">🟡 staging</a>
-                <a href="./develop/" class="develop">🟢 develop</a>
+                
+                <div class="branch-item main">
+                    <a href="./main/" class="main-link"><span>🔵</span> main (production)</a>
+                    <div class="sub-links">
+                        <a href="./main/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./main/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
+                    </div>
+                </div>
+
+                <div class="branch-item staging">
+                    <a href="./staging/" class="main-link"><span>🟡</span> staging</a>
+                    <div class="sub-links">
+                        <a href="./staging/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./staging/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
+                    </div>
+                </div>
+
+                <div class="branch-item develop">
+                    <a href="./develop/" class="main-link"><span>🟢</span> develop</a>
+                    <div class="sub-links">
+                        <a href="./develop/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./develop/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
+                    </div>
+                </div>
+
               </div>
             </div>
           </body>
