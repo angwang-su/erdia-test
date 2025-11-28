@@ -61,6 +61,18 @@ jobs:
       - name: Generate PlantUML
         run: yarn erdia:build:puml
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Download PlantUML
+        run: curl -L https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar -o plantuml.jar
+
+      - name: Generate PlantUML Image
+        run: java -jar plantuml.jar -tsvg erd-output/erd.puml
+
       - name: Upload ERD artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -216,7 +228,8 @@ jobs:
                 <div class="branch-item main">
                     <a href="./main/" class="main-link"><span>🔵</span> main (production)</a>
                     <div class="sub-links">
-                        <a href="./main/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./main/erd.svg" class="sub-link">🖼️ PlantUML (SVG)</a>
+                        <a href="./main/erd.puml" class="sub-link">📄 Code</a>
                         <a href="./main/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
                     </div>
                 </div>
@@ -224,7 +237,8 @@ jobs:
                 <div class="branch-item staging">
                     <a href="./staging/" class="main-link"><span>🟡</span> staging</a>
                     <div class="sub-links">
-                        <a href="./staging/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./staging/erd.svg" class="sub-link">🖼️ PlantUML (SVG)</a>
+                        <a href="./staging/erd.puml" class="sub-link">📄 Code</a>
                         <a href="./staging/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
                     </div>
                 </div>
@@ -232,7 +246,8 @@ jobs:
                 <div class="branch-item develop">
                     <a href="./develop/" class="main-link"><span>🟢</span> develop</a>
                     <div class="sub-links">
-                        <a href="./develop/erd.puml" class="sub-link">📄 PlantUML</a>
+                        <a href="./develop/erd.svg" class="sub-link">🖼️ PlantUML (SVG)</a>
+                        <a href="./develop/erd.puml" class="sub-link">📄 Code</a>
                         <a href="./develop/mermaid.html" class="sub-link">🧜‍♀️ Mermaid</a>
                     </div>
                 </div>
